@@ -2,6 +2,10 @@ name: Build APK
 
 on:
   push:
+    name: Build APK
+
+on:
+  push:
     branches: [ main ]
   workflow_dispatch:
 
@@ -23,7 +27,7 @@ jobs:
       with:
         gradle-version: '8.5'
 
-    - name: Prepare Project Structure
+    - name: Prepare Project Structure & Resources
       run: |
         mkdir -p app/src/main/java/com/example/goldencamera
         mkdir -p app/src/main/res/layout
@@ -32,9 +36,42 @@ jobs:
         mv *.kt app/src/main/java/com/example/goldencamera/ 2>/dev/null || true
         mv *_*.xml app/src/main/res/layout/ 2>/dev/null || true
 
-        if [ -f AndroidManifest.xml ]; then
-          mv AndroidManifest.xml app/src/main/
-        fi
+        # إنشاء ملف AndroidManifest.xml متوافق ومنضبط
+        cat << 'EOF' > app/src/main/AndroidManifest.xml
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+            package="com.example.goldencamera">
+
+            <application
+                android:allowBackup="true"
+                android:label="@string/app_name"
+                android:supportsRtl="true"
+                android:theme="@style/Theme.GoldenCamera">
+                <activity
+                    android:name=".MainActivity"
+                    android:exported="true">
+                    <intent-filter>
+                        <action android:name="android.intent.action.MAIN" />
+                        <category android:name="android.intent.category.LAUNCHER" />
+                    </intent-filter>
+                </activity>
+            </application>
+        </manifest>
+        EOF
+
+        # إنشاء ملف النصوص الأساسية لاسم التطبيق
+        cat << 'EOF' > app/src/main/res/values/strings.xml
+        <resources>
+            <string name="app_name">GoldenCamera</string>
+        </resources>
+        EOF
+
+        # إنشاء ملف الأشكال والثيمات المطلوبة
+        cat << 'EOF' > app/src/main/res/values/styles.xml
+        <resources>
+            <style name="Theme.GoldenCamera" parent="Theme.AppCompat.Light.NoActionBar">
+            </style>
+        </resources>
+        EOF
 
         cat << 'EOF' > settings.gradle
         pluginManagement {
