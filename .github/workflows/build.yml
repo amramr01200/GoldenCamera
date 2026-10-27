@@ -18,7 +18,12 @@ jobs:
         distribution: 'zulu'
         java-version: '17'
 
-    - name: Prepare Project Structure & Gradle 8.5
+    - name: Setup Gradle Official
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: '8.5'
+
+    - name: Prepare Project Structure
       run: |
         mkdir -p app/src/main/java/com/example/goldencamera
         mkdir -p app/src/main/res/layout
@@ -88,15 +93,10 @@ jobs:
         }
         EOF
 
-        # تثبيت Gradle 8.5 واستخدام الـ Wrapper لضمان الاستقرار التام
-        gradle wrapper --gradle-version 8.5
+    - name: Build APK
+      run: gradle assembleDebug
 
-    - name: Build APK with Gradle Wrapper
-      run: |
-        chmod +x gradlew
-        ./gradlew assembleDebug
-
-    - name: Upload APK Artifact
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: GoldenCamera-APK
