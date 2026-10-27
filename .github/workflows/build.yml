@@ -25,17 +25,25 @@ jobs:
 
     - name: Prepare Project Structure & Resources
       run: |
+        # 1. إنشاء المجلدات الأساسية
         mkdir -p app/src/main/java/com/example/goldencamera
         mkdir -p app/src/main/res/layout
         mkdir -p app/src/main/res/values
 
+        # 2. نقل ملفات الكود (إذا كانت في الجذر)
         mv *.kt app/src/main/java/com/example/goldencamera/ 2>/dev/null || true
         mv *_*.xml app/src/main/res/layout/ 2>/dev/null || true
 
-        # إنشاء ملف AndroidManifest.xml متوافق ومنضبط
+        # 3. إنشاء ملف AndroidManifest.xml (مع صلاحيات NFC والكاميرا)
         cat << 'EOF' > app/src/main/AndroidManifest.xml
         <manifest xmlns:android="http://schemas.android.com/apk/res/android"
             package="com.example.goldencamera">
+
+            <uses-permission android:name="android.permission.CAMERA" />
+            <uses-permission android:name="android.permission.NFC" />
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-feature android:name="android.hardware.camera.any" android:required="true" />
+            <uses-feature android:name="android.hardware.nfc" android:required="false" />
 
             <application
                 android:allowBackup="true"
@@ -54,21 +62,46 @@ jobs:
         </manifest>
         EOF
 
-        # إنشاء ملف النصوص الأساسية لاسم التطبيق
-        cat << 'EOF' > app/src/main/res/values/strings.xml
+        # 4. إنشاء ملف الألوان (هذا هو الذي كان مفقوداً وسبب الخطأ!)
+        cat << 'EOF' > app/src/main/res/values/colors.xml
         <resources>
-            <string name="app_name">GoldenCamera</string>
+            <color name="gold">#E0B84C</color>
+            <color name="gold_bright">#FFD700</color>
+            <color name="gold_translucent">#CCFFD700</color>
+            <color name="black_deep">#0A0A0A</color>
         </resources>
         EOF
 
-        # إنشاء ملف الأشكال والثيمات المطلوبة
-        cat << 'EOF' > app/src/main/res/values/styles.xml
+        # 5. إنشاء ملف النصوص (Strings)
+        cat << 'EOF' > app/src/main/res/values/strings.xml
         <resources>
-            <style name="Theme.GoldenCamera" parent="Theme.AppCompat.Light.NoActionBar">
+            <string name="app_name">GoldenCamera</string>
+            <string name="ar_measure_hint">Tap two points to measure</string>
+            <string name="switch_language">Target: AR ⇄ EN</string>
+            <string name="btn_measure">AR Measure</string>
+            <string name="btn_ocr">Translate</string>
+            <string name="btn_capture">Capture</string>
+            <string name="enable_nfc">Please enable NFC</string>
+            <string name="nfc_hint">Hold an NFC card near the back of your phone</string>
+            <string name="save_card">Save to Database</string>
+            <string name="btn_nfc">NFC Reader</string>
+            <string name="btn_elevator">Elevator Sim</string>
+        </resources>
+        EOF
+
+        # 6. إنشاء ملف الثيم (Themes)
+        cat << 'EOF' > app/src/main/res/values/themes.xml
+        <resources>
+            <style name="Theme.GoldenCamera" parent="Theme.MaterialComponents.NoActionBar">
+                <item name="colorPrimary">@color/gold</item>
+                <item name="colorSecondary">@color/gold_bright</item>
+                <item name="android:statusBarColor">@color/black_deep</item>
+                <item name="android:navigationBarColor">@color/black_deep</item>
             </style>
         </resources>
         EOF
 
+        # 7. إعدادات Gradle
         cat << 'EOF' > settings.gradle
         pluginManagement {
             repositories {
@@ -89,13 +122,19 @@ jobs:
         EOF
 
         cat << 'EOF' > build.gradle
-        // Root build file
+        plugins {
+            id 'com.android.application' version '8.1.1' apply false
+            id 'org.jetbrains.kotlin.android' version '1.9.0' apply false
+            id 'org.jetbrains.kotlin.kapt' version '1.9.0' apply false
+        }
         EOF
 
+        # 8. إعدادات التطبيق (Dependencies)
         cat << 'EOF' > app/build.gradle
         plugins {
-            id 'com.android.application' version '8.1.1'
-            id 'org.jetbrains.kotlin.android' version '1.9.0'
+            id 'com.android.application'
+            id 'org.jetbrains.kotlin.android'
+            id 'org.jetbrains.kotlin.kapt'
         }
 
         android {
@@ -108,6 +147,10 @@ jobs:
                 targetSdk 34
                 versionCode 1
                 versionName "1.0"
+            }
+
+            buildFeatures {
+                viewBinding true
             }
 
             compileOptions {
@@ -123,6 +166,31 @@ jobs:
             implementation 'androidx.core:core-ktx:1.12.0'
             implementation 'androidx.appcompat:appcompat:1.6.1'
             implementation 'com.google.android.material:material:1.11.0'
+
+            // CameraX (للكاميرا والزوم والفلاش)
+            def camerax_version = "1.3.4"
+            implementation "androidx.camera:camera-core:$camerax_version"
+            implementation "androidx.camera:camera-camera2:$camerax_version"
+            implementation "androidx.camera:camera-lifecycle:$camerax_version"
+            implementation "androidx.camera:camera-view:$camerax_version"
+            implementation "androidx.camera:camera-extensions:$camerax_version"
+
+            // SceneView (لقياس AR والمحاكي ثلاثي الأبعاد)
+            implementation 'io.github.sceneview:arsceneview:2.2.0'
+
+            // ML Kit (لترجمة النصوص OCR)
+            implementation 'com.google.mlkit:text-recognition:16.0.1'
+            implementation 'com.google.mlkit:language-id:17.0.6'
+            implementation 'com.google.mlkit:translate:17.0.3'
+
+            // Room (لقاعدة بيانات البطاقات)
+            implementation 'androidx.room:room-runtime:2.6.1'
+            implementation 'androidx.room:room-ktx:2.6.1'
+            kapt 'androidx.room:room-compiler:2.6.1'
+
+            // Coroutines
+            implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0'
+            implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
         }
         EOF
 
@@ -134,4 +202,3 @@ jobs:
       with:
         name: GoldenCamera-APK
         path: app/build/outputs/apk/debug/*.apk
-        
