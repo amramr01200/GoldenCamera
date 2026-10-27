@@ -18,15 +18,98 @@ jobs:
         distribution: 'zulu'
         java-version: '17'
 
-    - name: Build APK with Gradle
-      working-directory: GoldenCamera
+    - name: Prepare Project Structure
       run: |
-        chmod +x gradlew || true
-        ./gradlew assembleDebug || gradle assembleDebug
+        # إنشاء هيكل مجلدات أندرويد القياسي
+        mkdir -p app/src/main/java/com/example/goldencamera
+        mkdir -p app/src/main/res/layout
+        mkdir -p app/src/main/res/values
+
+        # نقل ملفات كوتلين إلى مكانها الصحيح
+        mv *.kt app/src/main/java/com/example/goldencamera/ 2>/dev/null || true
+
+        # نقل ملفات التصميم XML
+        mv *_*.xml app/src/main/res/layout/ 2>/dev/null || true
+
+        # معالجة ملف الـ Manifest
+        if [ -f AndroidManifest.xml ]; then
+          mv AndroidManifest.xml app/src/main/
+        fi
+
+        # إنشاء ملف settings.gradle.kts
+        cat << 'EOF' > settings.gradle.kts
+        pluginManagement {
+            repositories {
+                google()
+                mavenCentral()
+                gradlePluginPortal()
+            }
+        }
+        dependencyResolutionManagement {
+            repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+            repositories {
+                google()
+                mavenCentral()
+            }
+        }
+        rootProject.name = "GoldenCamera"
+        include(":app")
+        EOF
+
+        # إنشاء ملف build.gradle.kts الرئيسي
+        cat << 'EOF' > build.gradle.kts
+        plugins {
+            id("com.android.application") version "8.1.1" apply false
+            id("org.jetbrains.kotlin.android") version "1.9.0" apply false
+        }
+        EOF
+
+        # إنشاء ملف app/build.gradle.kts
+        cat << 'EOF' > app/build.gradle.kts
+        plugins {
+            id("com.android.application")
+            id("org.jetbrains.kotlin.android")
+        }
+
+        android {
+            namespace = "com.example.goldencamera"
+            compileSdk = 34
+
+            defaultConfig {
+                applicationId = "com.example.goldencamera"
+                minSdk = 24
+                targetSdk = 34
+                versionCode = 1
+                versionName = "1.0"
+            }
+
+            compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_17
+                targetCompatibility = JavaVersion.VERSION_17
+            }
+            kotlinOptions {
+                jvmTarget = "17"
+            }
+        }
+
+        dependencies {
+            implementation("androidx.core:core-ktx:1.12.0")
+            implementation("androidx.appcompat:appcompat:1.6.1")
+            implementation("com.google.android.material:material:1.11.0")
+        }
+        EOF
+
+        # توليد أداة Gradle Wrapper
+        gradle wrapper
+
+    - name: Build APK with Gradle
+      run: |
+        chmod +x gradlew
+        ./gradlew assembleDebug
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: GoldenCamera-APK
-        path: GoldenCamera/app/build/outputs/apk/debug/*.apk
+        path: app/build/outputs/apk/debug/*.apk
         
