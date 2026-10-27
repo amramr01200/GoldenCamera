@@ -1,8 +1,0 @@
-<resources>
-    <style name="Theme.GoldenCamera" parent="Theme.MaterialComponents.NoActionBar">
-        <item name="colorPrimary">@color/gold</item>
-        <item name="colorSecondary">@color/gold_bright</item>
-        <item name="android:statusBarColor">@color/black_deep</item>
-        <item name="android:navigationBarColor">@color/black_deep</item>
-    </style>
-</resources>
