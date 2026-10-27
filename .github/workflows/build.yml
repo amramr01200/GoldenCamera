@@ -18,7 +18,7 @@ jobs:
         distribution: 'zulu'
         java-version: '17'
 
-    - name: Prepare Project Structure & Files
+    - name: Prepare Project Structure & Gradle 8.5
       run: |
         mkdir -p app/src/main/java/com/example/goldencamera
         mkdir -p app/src/main/res/layout
@@ -51,13 +51,13 @@ jobs:
         EOF
 
         cat << 'EOF' > build.gradle
-        // Empty root build.gradle for modern gradle
+        // Root build file
         EOF
 
         cat << 'EOF' > app/build.gradle
         plugins {
-            id 'com.android.application'
-            id 'org.jetbrains.kotlin.android'
+            id 'com.android.application' version '8.1.1'
+            id 'org.jetbrains.kotlin.android' version '1.9.0'
         }
 
         android {
@@ -88,8 +88,13 @@ jobs:
         }
         EOF
 
-    - name: Build APK using Gradle Direct
-      run: gradle assembleDebug
+        # تثبيت Gradle 8.5 واستخدام الـ Wrapper لضمان الاستقرار التام
+        gradle wrapper --gradle-version 8.5
+
+    - name: Build APK with Gradle Wrapper
+      run: |
+        chmod +x gradlew
+        ./gradlew assembleDebug
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
