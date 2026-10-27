@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:padding="16dp" android:background="@color/black_deep">
+    <TextView android:id="@+id/txtNfcStatus" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="@string/nfc_hint" android:textColor="@color/gold_bright" android:textSize="18sp"
+        android:textStyle="bold" android:gravity="center" android:padding="16dp" />
+    <TextView android:id="@+id/txtNfcUid" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:textColor="@color/gold_bright" android:textSize="20sp" android:textStyle="bold" android:padding="8dp" />
+    <TextView android:id="@+id/txtNfcDetails" android:layout_width="match_parent" android:layout_height="0dp"
+        android:layout_weight="1" android:textColor="@color/gold" android:textSize="16sp" android:padding="8dp" android:fontFamily="monospace" />
+    <Button android:id="@+id/btnSaveNfc" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="@string/save_card" android:enabled="false" android:backgroundTint="@color/gold" android:textColor="@color/black_deep" android:textStyle="bold" />
+</LinearLayout>
