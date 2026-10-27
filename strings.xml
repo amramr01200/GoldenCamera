@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Golden Camera</string>
+    <string name="ar_measure_hint">Tap two points to measure</string>
+    <string name="switch_language">Target: AR ⇄ EN</string>
+    <string name="btn_measure">AR Measure</string>
+    <string name="btn_ocr">Translate</string>
+    <string name="btn_capture">Capture</string>
+    <string name="enable_nfc">Please enable NFC</string>
+    <string name="nfc_hint">Hold an NFC card near the back of your phone</string>
+    <string name="save_card">Save to Database</string>
+    <string name="btn_nfc">NFC Reader</string>
+    <string name="btn_elevator">Elevator Sim</string>
+</resources>
